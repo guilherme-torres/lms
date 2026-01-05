@@ -14,7 +14,8 @@ export abstract class CoreProvider {
 }
 
 export abstract class Api extends CoreProvider {
-    handlers: Record<string, Handler> = {}
+    repository?: Repository
+    handlers?: Record<string, Handler>
 
     /** Utilize para criar as tabelas */
     tables() {}
@@ -25,5 +26,12 @@ export abstract class Api extends CoreProvider {
     init() {
         this.tables()
         this.routes()
+    }
+}
+
+export abstract class Repository {
+    db: Core['db']
+    constructor(db: Core['db']) {
+        this.db = db
     }
 }
