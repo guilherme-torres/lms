@@ -1,4 +1,4 @@
-type UserRole = "admin" | "editor" | "user"
+export type UserRole = "admin" | "editor" | "user"
 
 export type UserData = {
     id: number

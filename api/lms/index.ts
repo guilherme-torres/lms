@@ -1,10 +1,12 @@
 import { Api } from "../../core/utils/abstract.ts";
 import { RouteError } from "../../core/utils/route-error.ts";
+import { AuthMiddleware } from "../auth/middleware/auth.ts";
 import { LmsRepository } from "./repository.ts";
 import { lmsTables } from "./tables.ts";
 
 export class LmsApi extends Api {
     repository = new LmsRepository(this.db)
+    authMiddleware = new AuthMiddleware(this.core)
 
     handlers = {
         createCourse: (req, res) => {
@@ -32,10 +34,9 @@ export class LmsApi extends Api {
                 throw new RouteError(400, "erro ao buscar curso")
             }
             const lessons = this.repository.findLessonsByCourseSlugDB(course.slug)
-            const userId = 1
             let completed: { lesson_id: number, completed: string }[] = []
-            if (userId) {
-                completed = this.repository.selectLessonsCompleted(userId, course.id)
+            if (req.session) {
+                completed = this.repository.selectLessonsCompleted(req.session.user_id, course.id)
             }
             res.status(200).json({ course, lessons, completed })
         },
@@ -138,9 +139,10 @@ export class LmsApi extends Api {
     routes() {
         this.router.post("/lms/courses", this.handlers.createCourse)
         this.router.get("/lms/courses", this.handlers.listCourses)
-        this.router.get("/lms/courses/:slug", this.handlers.getCourse)
+        this.router.get("/lms/courses/:slug", this.handlers.getCourse, [this.authMiddleware.optional])
         this.router.delete("/lms/courses/reset", this.handlers.resetCourse)
         this.router.post("/lms/lessons", this.handlers.createLesson)
+        this.router.post("/lms/lessons/complete", this.handlers.completeLesson)
         this.router.get("/lms/lessons/:courseSlug/:lessonSlug", this.handlers.getLesson)
         this.router.get("/lms/certificates", this.handlers.listCertificates)
         this.router.get("/lms/certificates/:id", this.handlers.getCertificate)
