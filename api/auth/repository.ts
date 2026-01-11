@@ -1,5 +1,5 @@
 import { Repository } from "../../core/utils/abstract.ts";
-import type { CreateUserData, UserData } from "./types.ts";
+import type { CreateSessionData, CreateUserData, SessionData, UserData } from "./types.ts";
 
 export class AuthRepository extends Repository {
     createUserDB({ name, username, email, role, passwordHash }: CreateUserData) {
@@ -15,5 +15,20 @@ export class AuthRepository extends Repository {
         return this.db.query(`
             SELECT * FROM "users" WHERE "username" = ?
         `).get(username) as UserData | undefined
+    }
+
+    insertSession({sid_hash, user_id, expires_ms, ip, ua}: CreateSessionData) {
+        return this.db.query(`
+            INSERT OR IGNORE INTO "sessions"
+            ("sid_hash", "user_id", "expires", "ip", "ua")
+            VALUES
+            (?, ?, ?, ?, ?)
+        `).run(sid_hash, user_id, Math.floor(expires_ms / 1000), ip, ua)
+    }
+
+    getSession(sidHash: string) {
+        return this.db.query(`
+            SELECT * FROM "sessions" WHERE "sid_hash" = ?
+        `).get(sidHash) as SessionData | undefined
     }
 }

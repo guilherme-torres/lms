@@ -207,9 +207,9 @@ const functions = {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    name: "João da Silva",
-                    username: "joao",
-                    email: "joao@gmail.com",
+                    name: "Maria da Silva",
+                    username: "maria",
+                    email: "maria@teste.com",
                     password: "1234"
                 })
             }
